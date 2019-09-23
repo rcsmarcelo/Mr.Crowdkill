@@ -17,6 +17,8 @@ local Score = 0
 local Cash = 0
 local Kills = 0
 local Died = false
+local SpeedX = 0
+local SpeedY = 0
 
 --game variables
 local Enemies = {}
@@ -84,14 +86,14 @@ function scene:create(event)
 	ControlUpUI.x = display.contentCenterX - 220
 	ControlUpUI.y = display.contentCenterY + 75
 	ControlUpUI.alpha = 0.6
-	ControlUpUI:addEventListener('touch', move)
+	ControlUpUI:addEventListener('touch', moveCalc)
 
 	ControlLeftUI = display.newImageRect(UIGroup, 'Sprites/UI/joyleft.png', 170, 134)
 	ControlLeftUI:scale(0.3, 0.3)
 	ControlLeftUI.x = display.contentCenterX - 250
 	ControlLeftUI.y = display.contentCenterY + 105
 	ControlLeftUI.alpha = 0.6
-	ControlLeftUI:addEventListener('touch', move)
+	ControlLeftUI:addEventListener('touch', moveCalc)
 
 	ControlDownUI = display.newImageRect(UIGroup, 'Sprites/UI/joyup.png', 133, 186)
 	ControlDownUI:scale(0.3, 0.3)
@@ -99,14 +101,15 @@ function scene:create(event)
 	ControlDownUI.x = display.contentCenterX - 220
 	ControlDownUI.y = display.contentCenterY + 130
 	ControlDownUI.alpha = 0.6
-	ControlDownUI:addEventListener('touch', move)
+	ControlDownUI:addEventListener('touch', moveCalc)
 
 	ControlRightUI = display.newImageRect(UIGroup, 'Sprites/UI/joyright.png', 170, 134)
 	ControlRightUI:scale(0.3, 0.3)
 	ControlRightUI.x = display.contentCenterX - 190
 	ControlRightUI.y = display.contentCenterY + 105
 	ControlRightUI.alpha = 0.6
-	ControlRightUI:addEventListener('touch', move)
+	ControlRightUI:addEventListener('touch', moveCalc)
+	Runtime:addEventListener('enterFrame', move)
 
 
 	--create player and it's movements
@@ -120,7 +123,7 @@ function scene:create(event)
 		{
 			name = "walk",
 			frames = {30, 31, 32, 33, 34, 35},
-			time = 700,
+			time = 300,
 			loopCount = 0
 		}
 	}
@@ -133,7 +136,6 @@ end
 function scene:show(event)
 	physics.start()
 	physics.setGravity(0, 0)
-	Player:play()
 end
 
 -- -----------------------------------------------------------------------------------
@@ -141,29 +143,52 @@ end
 -- -----------------------------------------------------------------------------------
 
 function move(event)
+	Player.x = Player.x + SpeedX
+	Player.y = Player.y + SpeedY
+end
+
+function moveCalc(event)
 	if (event.target == ControlUpUI) then
 		if (event.phase == 'began') then
-			Player.y = Player.y - 0.1
+			Player:play()
+			SpeedX = 0
+			SpeedY = -2
 		elseif (event.phase == 'ended') then
-			Player.y = Player.y
+			Player:pause()
+			SpeedX = 0
+			SpeedY = 0
 		end
 	elseif (event.target == ControlDownUI) then
 		if (event.phase == 'began') then
-			Player.y = Player.y + 0.1
+			Player:play()
+			SpeedX = 0
+			SpeedY = 2
 		elseif (event.phase == 'ended') then
-			Player.y = Player.y
+			Player:pause()
+			SpeedX = 0
+			SpeedY = 0
 		end
 	elseif (event.target == ControlRightUI) then
 		if (event.phase == 'began') then
-			Player.x = Player.x + 0.1
+			Player:play()
+			Player.xScale = 1
+			SpeedX = 2
+			SpeedY = 0
 		elseif (event.phase == 'ended') then
-			Player.x = Player.x
+			Player:pause()
+			SpeedX = 0
+			SpeedY = 0
 		end
 	elseif (event.target == ControlLeftUI) then
 		if (event.phase == 'began') then
-			Player.x = Player.x - 0.1
+			Player:play()
+			Player.xScale = -1
+			SpeedX = -2
+			SpeedY = 0
 		elseif (event.phase == 'ended') then
-			Player.x = Player.x
+			Player:pause()
+			SpeedX = 0
+			SpeedY = 0
 		end
 	end
 end
