@@ -19,10 +19,13 @@ local Kills = 0
 local Died = false
 local SpeedX = 0
 local SpeedY = 0
+local BackgroundSpeed = 0
 
 --game variables
 local Enemies = {}
 local Player
+local Background
+local PlayableArea = {}
 
 --ui variables
 local HealthUI
@@ -47,6 +50,37 @@ local GruntSound
 local BGMusic
 local BreakSound
 
+
+-- -----------------------------------------------------------------------------------
+-- Auxiliar functions
+-- -----------------------------------------------------------------------------------
+function isInArea(x, y, vertices)
+	local polyX = {}
+	local polyY = {}
+	local j = #vertices/2
+	local result = false
+	for i, xy in ipairs(vertices) do
+		if (i % 2 == 0) then
+			table.insert(polyY, xy)
+		else
+			table.insert(polyX, xy)
+		end
+	end
+
+	for i = 1, #vertices/2 do
+		if ( (polyY[i] < y and polyY[j] >= y)
+				or (polyY[j] < y and polyY[i] >= y)
+				and (polyX[i] <= x or polyX[j] <= x)) then
+			if (polyX[i] + (y - polyY[i]) / (polyY[j] - polyY[i])
+			 		* (polyX[j] - polyX[i]) < x) then
+				result = not result
+			end
+		end
+		j = i
+	end
+	return result
+end
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -66,11 +100,19 @@ function scene:create(event)
 	UIGroup = display.newGroup()
 	sceneGroup:insert(UIGroup)
 
+	--create PlayableArea
+	vertices = {-29, 233, 79, 233, 105, 216, 277, 214 ,277, 232 ,345,
+		232 ,359, 189 ,391, 189, 391, 209, 506, 209, 506, 297, -24, 297}
+	PlayableArea = display.newPolygon(display.contentCenterX, display.contentCenterY + 100,
+		vertices)
+	PlayableArea.Vertices = vertices
+	PlayableArea.alpha = 0
+
 	--load background
-	local background = display.newImageRect(BackGroup, 'Sprites/BGs/City2/Bright/City2.png', 1400, 800)
-	background.x = display.contentCenterX
-	background.y = display.contentCenterY
-	background:scale(0.4, 0.4)
+	Background = display.newImageRect(BackGroup, 'Sprites/BGs/City2/Bright/City2.png', 1400, 800)
+	Background.x = display.contentCenterX
+	Background.y = display.contentCenterY
+	Background:scale(0.4, 0.4)
 
 	--add ui text
 	LivesText = display.newText(UIGroup, 'Lives: ' .. Lives, display.contentCenterX - 210,
@@ -123,7 +165,7 @@ function scene:create(event)
 		{
 			name = "walk",
 			frames = {30, 31, 32, 33, 34, 35},
-			time = 300,
+			time = 500,
 			loopCount = 0
 		}
 	}
@@ -138,21 +180,40 @@ function scene:show(event)
 	physics.setGravity(0, 0)
 end
 
--- -----------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 -- Event listeners
--- -----------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 
 function move(event)
-	Player.x = Player.x + SpeedX
-	Player.y = Player.y + SpeedY
+	if (not isInArea(Player.x, Player.y, PlayableArea.Vertices)) then
+		if (isInArea(Player.x, Player.y + 10, PlayableArea.Vertices)) then
+			Player.y = Player.y + 1
+		elseif (isInArea(Player.x, Player.y - 10, PlayableArea.Vertices)) then
+			Player.y = Player.y - 1
+		elseif (isInArea(Player.x + 10, Player.y, PlayableArea.Vertices)) then
+			Player.x = Player.x + 1
+		elseif (isInArea(Player.x - 10, Player.y, PlayableArea.Vertices)) then
+			Player.x = Player.x - 1
+		else
+			SpeedX = 0
+			SpeedY = 0
+		end
+	end
+	if (Player.x >= 280 and Background.x > 30) then
+		Background.x = Background.x - BackgroundSpeed
+	else
+		Player.x = Player.x + SpeedX
+		Player.y = Player.y + SpeedY
+	end
 end
 
 function moveCalc(event)
+	print(isInArea(Player.x, Player.y, PlayableArea.Vertices))
 	if (event.target == ControlUpUI) then
 		if (event.phase == 'began') then
 			Player:play()
 			SpeedX = 0
-			SpeedY = -2
+			SpeedY = -1
 		elseif (event.phase == 'ended') then
 			Player:pause()
 			SpeedX = 0
@@ -162,7 +223,7 @@ function moveCalc(event)
 		if (event.phase == 'began') then
 			Player:play()
 			SpeedX = 0
-			SpeedY = 2
+			SpeedY = 1
 		elseif (event.phase == 'ended') then
 			Player:pause()
 			SpeedX = 0
@@ -172,18 +233,20 @@ function moveCalc(event)
 		if (event.phase == 'began') then
 			Player:play()
 			Player.xScale = 1
-			SpeedX = 2
+			SpeedX = 1
 			SpeedY = 0
+			BackgroundSpeed = 1
 		elseif (event.phase == 'ended') then
 			Player:pause()
 			SpeedX = 0
 			SpeedY = 0
+			BackgroundSpeed = 0
 		end
 	elseif (event.target == ControlLeftUI) then
 		if (event.phase == 'began') then
 			Player:play()
 			Player.xScale = -1
-			SpeedX = -2
+			SpeedX = -1
 			SpeedY = 0
 		elseif (event.phase == 'ended') then
 			Player:pause()
@@ -200,6 +263,6 @@ scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
--- -----------------------------------------------------------------------------------
 
+-- -----------------------------------------------------------------------------------
 return scene
