@@ -26,6 +26,8 @@ local Enemies = {}
 local Player
 local Background
 local PlayableArea = {}
+local vertices = {}
+local BGMove = false
 
 --ui variables
 local HealthUI
@@ -54,6 +56,14 @@ local BreakSound
 -- -----------------------------------------------------------------------------------
 -- Auxiliar functions
 -- -----------------------------------------------------------------------------------
+function editPlayableArea()
+	for i = 0, #vertices do
+		if (i % 2 ~= 0) then
+			vertices[i] = vertices[i] + BackgroundSpeed
+		end
+	end
+end
+
 function isInArea(x, y, vertices)
 	local polyX = {}
 	local polyY = {}
@@ -100,19 +110,19 @@ function scene:create(event)
 	UIGroup = display.newGroup()
 	sceneGroup:insert(UIGroup)
 
-	--create PlayableArea
-	vertices = {-29, 233, 79, 233, 105, 216, 277, 214 ,277, 232 ,345,
-		232 ,359, 189 ,391, 189, 391, 209, 506, 209, 506, 297, -24, 297}
-	PlayableArea = display.newPolygon(display.contentCenterX, display.contentCenterY + 100,
-		vertices)
-	PlayableArea.Vertices = vertices
-	PlayableArea.alpha = 0
-
 	--load background
-	Background = display.newImageRect(BackGroup, 'Sprites/BGs/City2/Bright/City2.png', 1400, 800)
+	Background = display.newImageRect(BackGroup, 'Sprites/BGs/City2/Bright/City2.png', 5240, 1080)
 	Background.x = display.contentCenterX
 	Background.y = display.contentCenterY
-	Background:scale(0.4, 0.4)
+	Background:scale(0.3, 0.3)
+
+	--create PlayableArea
+	vertices = {-29, 203, 45, 203, 45, 233, 149, 233, 175, 216, 365, 214, 365, 232, 430,
+		232, 429, 189, 481, 189, 481, 200, 616, 200, 616, 297, -29, 297}
+	PlayableArea = display.newPolygon(Background.x + 50, display.contentCenterY + 100,
+		vertices)
+	PlayableArea.Vertices = vertices
+	PlayableArea.alpha = 0.5
 
 	--add ui text
 	LivesText = display.newText(UIGroup, 'Lives: ' .. Lives, display.contentCenterX - 210,
@@ -183,7 +193,6 @@ end
 -- -----------------------------------------------------------------------------
 -- Event listeners
 -- -----------------------------------------------------------------------------
-
 function move(event)
 	if (not isInArea(Player.x, Player.y, PlayableArea.Vertices)) then
 		if (isInArea(Player.x, Player.y + 10, PlayableArea.Vertices)) then
@@ -199,16 +208,27 @@ function move(event)
 			SpeedY = 0
 		end
 	end
-	if (Player.x >= 280 and Background.x > 30) then
-		Background.x = Background.x - BackgroundSpeed
-	else
-		Player.x = Player.x + SpeedX
-		Player.y = Player.y + SpeedY
+	if (Player.x >= 280) then BGMove = true end
+	if (Background.x <= 30 and Background.x % 90 == 0) then BGMove = false end
+	if (BGMove) then
+		Background.x = Background.x + BackgroundSpeed
+		PlayableArea.x = PlayableArea.x + BackgroundSpeed
+		display.remove(PlayableArea)
+		editPlayableArea()
+		PlayableArea = display.newPolygon(Background.x + 50, display.contentCenterY + 100,
+			vertices)
+		PlayableArea.Vertices = vertices
+		PlayableArea.alpha = 0.1
+		if (SpeedX > 0) then SpeedX = -0.8 end
+	elseif (SpeedX == -0.8) then
+			SpeedX = 0
+			Player:pause()
 	end
+	Player.x = Player.x + SpeedX
+	Player.y = Player.y + SpeedY
 end
 
 function moveCalc(event)
-	print(isInArea(Player.x, Player.y, PlayableArea.Vertices))
 	if (event.target == ControlUpUI) then
 		if (event.phase == 'began') then
 			Player:play()
@@ -235,7 +255,7 @@ function moveCalc(event)
 			Player.xScale = 1
 			SpeedX = 1
 			SpeedY = 0
-			BackgroundSpeed = 1
+			BackgroundSpeed = - 1
 		elseif (event.phase == 'ended') then
 			Player:pause()
 			SpeedX = 0
