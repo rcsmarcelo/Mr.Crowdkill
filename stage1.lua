@@ -117,9 +117,11 @@ function scene:create(event)
 	Background:scale(0.3, 0.3)
 
 	--create PlayableArea
-	vertices = {-29, 203, 45, 203, 45, 233, 149, 233, 175, 216, 365, 214, 365, 232, 430,
-		232, 429, 189, 481, 189, 481, 200, 616, 200, 616, 297, -29, 297}
-	PlayableArea = display.newPolygon(Background.x + 50, display.contentCenterY + 100,
+	vertices = {-29, 203, 45, 203, 45, 233, 149, 233, 175, 214, 365, 214, 365, 232, 430,
+		232, 429, 189, 481, 189, 481, 203, 521, 203, 620, 203, 620, 233, 725, 233, 750, 214, 935, 214, 935, 232, 1020,
+			232, 1020, 189, 1051, 189, 1051, 200, 1080, 200, 1080, 297, -29, 297}
+
+	PlayableArea = display.newPolygon(Background.x + 280, display.contentCenterY + 100,
 		vertices)
 	PlayableArea.Vertices = vertices
 	PlayableArea.alpha = 0.5
@@ -208,22 +210,23 @@ function move(event)
 			SpeedY = 0
 		end
 	end
-	if (Player.x >= 280) then BGMove = true end
 	if (Background.x <= 30 and Background.x % 90 == 0) then BGMove = false end
+	if (Player.x >= 280) then BGMove = true end
 	if (BGMove) then
 		Background.x = Background.x + BackgroundSpeed
 		PlayableArea.x = PlayableArea.x + BackgroundSpeed
 		display.remove(PlayableArea)
 		editPlayableArea()
-		PlayableArea = display.newPolygon(Background.x + 50, display.contentCenterY + 100,
+		PlayableArea = display.newPolygon(Background.x + 280, display.contentCenterY + 100,
 			vertices)
 		PlayableArea.Vertices = vertices
-		PlayableArea.alpha = 0.1
-		if (SpeedX > 0) then SpeedX = -0.8 end
-	elseif (SpeedX == -0.8) then
+		PlayableArea.alpha = 0.3
+		if (SpeedX > 0) then SpeedX = -0.7 end
+	elseif (SpeedX == -0.7) then
 			SpeedX = 0
 			Player:pause()
 	end
+	print(Player.x)
 	Player.x = Player.x + SpeedX
 	Player.y = Player.y + SpeedY
 end
