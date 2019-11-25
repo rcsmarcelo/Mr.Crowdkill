@@ -210,21 +210,20 @@ function move(event)
 			SpeedY = 0
 		end
 	end
-	if (Background.x <= 30 and Background.x % 90 == 0) then BGMove = false end
-	if (Player.x >= 280) then BGMove = true end
+	if (Player.x <= 90) then BGMove = false
+	elseif (Player.x >= 280) then BGMove = true end
 	if (BGMove) then
 		Background.x = Background.x + BackgroundSpeed
 		PlayableArea.x = PlayableArea.x + BackgroundSpeed
 		display.remove(PlayableArea)
 		editPlayableArea()
-		PlayableArea = display.newPolygon(Background.x + 280, display.contentCenterY + 100,
-			vertices)
+		PlayableArea = display.newPolygon(Background.x + 280, display.contentCenterY
+		 + 100, vertices)
 		PlayableArea.Vertices = vertices
 		PlayableArea.alpha = 0.3
 		if (SpeedX > 0) then SpeedX = -0.7 end
-	elseif (SpeedX == -0.7) then
-			SpeedX = 0
-			Player:pause()
+		elseif (SpeedX == -0.7) then
+			SpeedX = 1
 	end
 	print(Player.x)
 	Player.x = Player.x + SpeedX
@@ -258,7 +257,7 @@ function moveCalc(event)
 			Player.xScale = 1
 			SpeedX = 1
 			SpeedY = 0
-			BackgroundSpeed = - 1
+			BackgroundSpeed = - 1.7
 		elseif (event.phase == 'ended') then
 			Player:pause()
 			SpeedX = 0
