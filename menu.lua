@@ -3,26 +3,26 @@
 -- menu.lua
 --
 -----------------------------------------------------------------------------------------
-
 local composer = require"composer"
-
+local menuMusic
 local scene = composer.newScene()
 
 -- -----------------------------------------------------------------------------------
 -- Composer functions
 -- -----------------------------------------------------------------------------------
-
 local function gotoGame()
+	audio.stop(1)
+	audio.dispose(menuMusic)
 	composer.gotoScene('stage1', {time = 2000, efffect = crossfade})
 end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
-
 function scene:create()
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
+
 	local Background = display.newImageRect(sceneGroup, "Sprites/Menu/background.png", 500, 198)
 	Background.x = display.contentCenterX
 	Background.y = display.contentCenterY
@@ -48,17 +48,15 @@ function scene:create()
 end
 
 -- show()
-function scene:show( event )
-
+function scene:show(event)
 	local sceneGroup = self.view
 	local phase = event.phase
 
-	if ( phase == "will" ) then
-		-- Code here runs when the scene is still off screen (but is about to come on screen)
-
-	elseif ( phase == "did" ) then
-		-- Code here runs when the scene is entirely on screen
-
+	if (phase == "will" ) then
+		menuMusic = audio.loadStream("Sounds/Furtive Monologue.mp3")
+		audio.setVolume(0.3, { channel=1 })
+		audio.seek(45000, menuMusic)
+		audio.play(menuMusic)
 	end
 end
 
